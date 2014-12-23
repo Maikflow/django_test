@@ -1,0 +1,155 @@
+# program imports, classes, and function definitions here...
+
+#!/usr/bin/python
+# -*- coding: latin1 -*-
+"""       turtle_histograms.py
+
+            input in file data.txt same directory as this file
+            sample input from request in daniweb:
+
+Student MarkA MarkB MarkC MarkD MarkF
+Alex 5 2 1 0 1
+Mark 3 5 1 0 0
+Costa 7 4 0 0 3
+Rita 0 6 2 2 4
+Mary 4 2 3 1 0
+John 3 4 2 1 0
+
+You are free to use this code in your solutions, if you keep the
+attribution to original author
+
+Written by Tony Veijalainen, 2010
+
+"""
+
+## little dangerous convenience import mixing the namespace of the program
+from turtle import  *
+
+try:
+    import psyco                        # python specialising compiler
+    psyco.full()
+except:
+    print('Install psyco for faster execution')
+    pass
+
+## h should be from real window size
+h=window_height()-40.0
+w=window_width()
+
+def histo(d,w, color1, scale = 10.0):
+    """ histogram with
+           bar length d,
+           width w
+           [and maximum d value scale] """
+    ## reducing the height when max mark bigger, floating point number
+    mult = (window_height()-100.0) / scale
+    print("\t%.2f tall" % (mult*d))
+    fill(True)
+    down()
+    color(color1)
+    forward(w)
+    left(90)
+    color(color1)
+    forward(d * mult)
+    left(90)
+    forward(w)
+    ## half done: print the value as number in black
+    color('black')
+    write(d)
+    color(color1)
+    left(90)
+    color(color1)
+    forward(d  *  mult)
+    left(90)
+    fill(False)
+    ## some spacing and axis
+    color('black')
+    forward(w * 1.33)
+
+def main():
+    reset()
+    setup(width=1000, height=600, startx=0, starty=0)
+    ## no delay
+    delay(0)
+    hideturtle()
+
+    ## move near left side and down of the default window
+    up()
+    left(180)
+    fd(window_width() / 2.0 - 10)
+    left(90) ## down
+    fd(window_height() / 2.0 - 30) ## leave space for names under
+    left(90) ## down bottom complete 360 degrees
+    down()
+
+    ## chosen colors, must be more than maximum numbers per line
+    colors =  ('red','blue','yellow','green','gray','gold','magenta',
+                'orange','brown')
+    f =  open('data.txt','r')
+    li =  [x.split() for x in f]
+
+    count =  len(li.pop(0)) - 1 ## count numbers and drop the header for now
+    if count==1:
+        lc=len(colors)-1
+        c=0
+        w = window_width() / (1.9 * count * len(li))
+        print("Each data cycling the colors as only one data point each of",\
+            lc, "colors.")
+    else:
+        colors =  colors[:count]
+        w =  window_width() / (1.5 * count * len(li))
+        print('Width set to',w)
+
+    ## max of marks as integer numbers each line, ignore name
+    ## **This line would generate errors if header would not been taken out **
+    m =  [max(int(y) for y in (x[1:])) for x in li]
+    ## max of all students marks as numbers, **Header dropped allready**
+    m =  max([int(x) for x in m])
+    print('Name and ',count,'numbers. Max mark',m)
+
+    for info in li:
+        print(info)
+        ## go 20 down to write name and come back up
+        up()
+        right(90)
+        forward(20)
+        left(90)
+
+        ## must center according to number of values
+        forward(count * w / 2.0)
+        write(info.pop(0))
+        backward(count * w / 2.0)
+
+        left(90)
+        forward(20)
+        right(90)
+        down()
+
+        ## write the histograms for student
+        if count==1 and info:
+            histo(int(info.pop(0)),w,colors[c],scale =  m)
+            c = c % lc + 1
+            fd(w / 2.0) ## space without separation lines
+        else:
+            ## separation line in black
+            fd(w / 2.0)
+            for c in colors:
+                ## allow some last marks missing
+                if info: histo(int(info.pop(0)),w,c ,scale =  m)
+                else: print('*number missing*', end=' ')
+            print()
+            left(90)
+            color('black')
+            fd(0.8*h)
+            up()
+            backward(0.8*h)
+            right(90)
+            down()
+
+    ht()
+    f.close()
+    return "Done!"
+
+if __name__  == '__main__':
+    main()
+    mainloop()
